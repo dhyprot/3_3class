@@ -1,0 +1,407 @@
+\documentclass[autodetect-engine,dvi=dvipdfmx,ja=standard,
+               a4j,11pt]{bxjsarticle}
+
+\RequirePackage{geometry}
+\geometry{reset,paperwidth=210truemm,paperheight=297truemm}
+\geometry{hmargin=.75truein,top=20truemm,bottom=25truemm,footskip=10truemm,headheight=0mm}
+%\geometry{showframe} % 本文の"枠"を確認したければ，コメントアウト
+\usepackage{graphicx}
+\usepackage{fancyvrb}
+\usepackage{spverbatim}
+\usepackage{amsmath}
+
+\renewcommand{\theFancyVerbLine}{\texttt{\footnotesize{\arabic{FancyVerbLine}:}}}
+
+\title{画像処理実験 第4回}
+\author{学生番号: 09B24490\\
+        加藤弘都 (KATO, HIROTO)}
+\date{\number\year 年\number\month 月\number\day 日}
+
+%%======== 本文 ====================================================%%
+\begin{document}
+\maketitle
+% 目次つきの表紙ページにする場合はコメントを外す
+%{\footnotesize \tableofcontents \newpage}
+
+%--------------------------------------------------------------------%
+\section{課題4} \label{sec:abstract}
+
+合成画像を作るために，ある画像から特徴点を取り，特徴点を起点に画像を合成したい．
+まず各画素における勾配を調べる．
+入力画像$I(x,y)$を$x$偏微分，$y$偏微分するが今回は以下の差分で近似する．
+
+\[
+\begin{pmatrix}
+I_x(x,y) \\
+I_y(x,y)
+\end{pmatrix}
+=
+\begin{pmatrix}
+I(x+1,y)-I(x-1,y) \\
+I(x,y+1)-I(x,y-1)
+\end{pmatrix}
+\]
+
+つぎに，勾配$I(Ix,Iy)$の分布を楕円で近似するとき，楕円の形状は
+以下のような点群の共分散行列で表現できる．
+
+\[
+\begin{pmatrix}
+I_{xx} & I_{xy} \\
+I_{xy} & I_{yy}
+\end{pmatrix}
+=
+\frac{1}{|\Omega(x,y)|}
+\sum_{\Omega(x,y)}
+\begin{pmatrix}
+I_x^2 & I_x I_y \\
+I_x I_y & I_y^2
+\end{pmatrix}
+\]
+
+この行列の固有値は楕円の長半径と短半径を表す．
+このとき，固有値（長半径と短半径）は勾配の分布をまとめていることから，
+画像が変化した方向，変化した大きさを表している．
+
+本章では小さい方の固有値（短半径）を\verb|TKfilter|関数で返している．
+画像はエッジ（上下で色が変わる部分など）の場合，長半径は大きいが短半径が小さい（縦のみが変化），
+しかし，角（エッジが二方向から交わる）の場合，長半径と短半径の両方が大きい（縦にも横にも変化）．
+このことから，長半径だけではエッジか角かの区別がつかないが，
+短半径なら区別がつくため，特徴点を発見するのに向いているのである．
+
+
+\subsection{[4-2]} \label{4-1}
+
+\subsubsection{自分の結果と「特徴らしさ画像」を照合}\label{4-2-1}
+
+$A=\begin{bmatrix}
+Ixx & Ixy\\
+Ixy & Iyy
+\end{bmatrix}$
+
+勾配\verb|(Ix,Iy)|を用いて上記のような共分散行列をつくる．この行列の固有値は
+勾配の分布を近似した楕円の長半径と短半径を表す．
+このことより，固有値の二次方程式を解の公式で解くと以下のようになる．
+ただし，以下は最小の固有値を表す．
+
+$\lambda_{\min}
+=
+\frac{I_{xx}+I_{yy}
+-\sqrt{(I_{xx}-I_{yy})^2+4I_{xy}^2}}{2}
+$
+
+コードでは以下のように表現している．
+
+\begin{Verbatim}[numbers=left, xleftmargin=10mm, numbersep=6pt,
+                    fontsize=\small, baselinestretch=0.8]
+    dstf[y,x]=(ixx+iyy-np.sqrt((ixx-iyy)*(ixx-iyy)+4*ixy*ixy))/2 
+\end{Verbatim}
+
+この\verb|dstf|を画像として表示させると図\ref{4-2-1}のようになる．
+
+\begin{figure}[h]
+ \centering
+ \includegraphics[scale=.15]{../4class/4-1-1-sample.png}
+ \includegraphics[scale=.15]{../4class/4-1-1.jpg}
+ \caption{「特徴らしさ画像」（左）と自分の結果（右）}
+ \label{4-2-1}
+\end{figure}
+
+図\ref{4-2-1}の二枚の画像を比較すると，私の結果は「特徴らしさ画像」と
+同じような特徴を捉えていることがわかる．
+\verb||\verb||\verb||\verb||\verb||
+
+\subsubsection{計算過程の確認}
+
+(1)では，\verb|I|に\verb|x|，\verb|y|についてそれぞれの偏微分をしている．
+偏微分には以下のように差分で近似して表現している．
+\begin{Verbatim}[numbers=left, xleftmargin=10mm, numbersep=6pt,
+                    fontsize=\small, baselinestretch=0.8]
+    Ix[y,x]=src[y,x+1  ,1] - src[y,x-1  ,1]
+    Iy[y,x]=src[y+1,x  ,1] - src[y-1,x  ,1]
+\end{Verbatim}
+
+(2)では(3)で共分散行列を求めるのに使用する，\verb|Ix*Ix|，\verb|Ix*Iy|，\verb|Iy*Iy|
+を求めている．
+
+(3)では，(4.1)の右辺を表している．
+\verb|blur|関数で\verb|Ixx|，\verb|Ixy|，\verb|Iyy|に平滑化を行っている．
+これにより，共分散行列を表す要素\verb|Ixx|，\verb|Iyy|，\verb|Ixy|を求めることができた．
+
+\subsubsection{2重ループを除去}
+
+\verb|conv2d|関数を利用する．この関数で使用している\verb|convolve2d|関数は引数に
+画像\verb|im|，行列\verb|k|をうけとる．そして，画像の畳込み演算を行う関数である．
+\verb|k|が以下のとき，\verb|x|について偏微分を行う．\verb|y|について偏微分する場合，以下の行列を転置する．
+
+$k=\begin{bmatrix}
+1 & 0 & -1 \\
+\end{bmatrix}$
+
+また，平滑化する場合は大きさ（今回は3x3行列）に応じて以下のような行列にすることで実現できる．
+
+$k=\begin{bmatrix}
+1/9 & 1/9 & 1/9 \\
+1/9 & 1/9 & 1/9 \\
+1/9 & 1/9 & 1/9 \\
+\end{bmatrix}$
+
+このことを踏まえて，(1)の偏微分を以下のように変更できる．
+この変更により，二重ループを除去できる．
+
+\begin{Verbatim}[numbers=left, xleftmargin=10mm, numbersep=6pt,
+                    fontsize=\small, baselinestretch=0.8]
+ Ix=conv2d(src[...,1], np.array([[1,0,-1]],'f'))
+ Iy=conv2d(src[...,1], np.array([[1],[0],[-1]],'f'))
+\end{Verbatim}
+
+また，\verb|blur|関数も同様に以下のように変更し，二重ループを除去できる．
+
+\begin{Verbatim}[numbers=left, xleftmargin=10mm, numbersep=6pt,
+                    fontsize=\small, baselinestretch=0.8]
+ X=W+1+W
+  return conv2d(im, np.full((X,X),1/(X*X),dtype='f') )
+\end{Verbatim}
+
+また，(2)と(4)で行列同士の掛け算をするときにfor文の二重ループを利用している．
+行列同士の演算は\verb|A*B|のように単純に表せるため，この二重ループも変更する．
+
+\subsubsection{偏微分・平滑化の実現}
+
+$A(x,y)=\begin{bmatrix}
+a11 & a12 & a13 \\
+a21 & a22 & a23 \\
+a31 & a32 & a33 \\
+\end{bmatrix}$
+
+上記のように$A(x,y)$を定義する．
+
+まず，偏微分について調べる．\verb|A(x,y)*[[1,0,-1]]|を式(4.2)に従って次のように展開する．
+
+$
+A(x,y)*[1,0,-1]=\begin{bmatrix}
+a13 - a11 \\
+a23 - a21 \\
+a33 - a31 \\
+\end{bmatrix}
+=I(x+1,y)-I(x-1,y)
+$
+
+これは偏微分を差分で近似した式と一致するから，\verb|x|について偏微分していると言える．
+また，\verb|y|について偏微分する場合，\verb|B|を\verb|[[1],[0],[-1]]|のようにすれば計算できる．
+
+次に，平滑化について考える．
+画像の平均化について考えたいので，畳み込む２つ目の行列\verb|B|を以下のように定義する．
+
+$B=\begin{bmatrix}
+1/9 & 1/9 & 1/9 \\
+1/9 & 1/9 & 1/9 \\
+1/9 & 1/9 & 1/9 \\
+\end{bmatrix}$
+
+\verb|A(x,y)*B|を式(4.2)に従って次のように展開する．
+
+$
+A(x,y)*B=\begin{bmatrix}
+\frac{a_{11} + a_{12} + a_{21} + a_{22}}{9} & \frac{a_{11} + a_{12} + a_{13} + a_{21} + a_{22} + a_{23}}{9} & \frac{a_{12} + a_{13} + a_{22} + a_{23}}{9} \\
+\frac{a_{11} + a_{12} + a_{21} + a_{22} + a_{31} + a_{32}}{9} & \frac{a_{11} + a_{12} + a_{13} + a_{21} + a_{22} + a_{23} + a_{31} + a_{32} + a_{33}}{9} & \frac{a_{12} + a_{13} + a_{22} + a_{23} + a_{32} + a_{33}}{9} \\
+\frac{a_{21} + a_{22} + a_{31} + a_{32}}{9} & \frac{a_{21} + a_{22} + a_{23} + a_{31} + a_{32} + a_{33}}{9} & \frac{a_{22} + a_{23} + a_{32} + a_{33}}{9}
+\end{bmatrix}
+$
+
+このとき，計算結果の行列の中央の要素について考える．
+
+$\frac{a_{11} + a_{12} + a_{13} + a_{21} + a_{22} + a_{23} + a_{31} + a_{32} + a_{33}}{9}$
+
+この値は\verb|A|のすべての値の和を$9$で割っている．
+このため，画像の畳込みで中央の1画素だけを平滑化できることがわかる．
+
+\subsubsection{計算時間・コード量・拡張性等}
+
+\ref{4-2-1}節で作成したコードと以降に変更したコードの２つについて比較する．
+
+まず，計算時間についてまとめる．
+表\ref{table:4-2-1}では変更前後のコードで(1)から(4)までの実行時間を記録している．
+表を見ると，(3)以外のすべて計算時間が早くなっている．
+
+\begin{table}[htbp]
+\centering
+\caption{変更前後の時間の変化}\label{table:4-2-1}
+\begin{tabular}{|c||c|c|c|c|}
+\hline
+ & (1) & (2) & (3) & (4)　\\
+\hline
+変更前 & 0.638 & 0.700 & 0.240 & 1.209 \\
+変更後　& 0.062 & 0.009 & 0.613 & 0.003 \\
+\hline
+\end{tabular}\end{table}
+
+(3)は\verb|blur|関数のみ変更している．
+画像の畳込みを利用しているため，各画素ごとに\verb|k|を画素に掛けて足している．
+変更前では配列演算のみを行っているが，
+変更後は畳み込み演算を中心に実行するため単純な平均化に特化した処理ではなく，
+比較すると遅くなってしまったと考える．
+
+つぎにコード量について，より簡潔になったと考える．
+二重ループをなくすために，\verb|conv2d|関数を使用したこと，
+行列計算をfor文なしで計算したことなどにより，
+簡潔に表現できた．
+
+最後に拡張性について，高くなったと考える．\verb|conv2d|関数を定義したことで，
+他に畳み込みを利用した処理が必要になったときに
+関数を呼び出すだけで処理を実行できるようになる．
+
+\subsubsection{\texttt{blur}関数のベクトル化}
+
+\begin{Verbatim}[numbers=left, xleftmargin=10mm, numbersep=6pt,
+                    fontsize=\small, baselinestretch=0.8]
+def blur(im,W=7): # a.k.a. Box blur
+ out=np.zeros_like(im)
+
+ for v in range(-W,W+1):
+  for u in range(-W,W+1):
+   out[W:-W,W:-W]+=im[v+W:im.shape[0]+v-W,u+W:u+im.shape[1]-W]
+ return out/((2*W+1)*(2*W+1))
+\end{Verbatim}
+
+
+二段階化したコードは以下である．
+\begin{Verbatim}[numbers=left, xleftmargin=10mm, numbersep=6pt,
+                    fontsize=\small, baselinestretch=0.8]
+ out=np.zeros_like(im)
+ t=np.zeros_like(im)
+ 
+ for v in range(-W,W+1):
+   t[W:-W,:]+=im[v+W:v+im.shape[0]-W,:]
+ t=t/(2*W+1)
+ for u in range(-W,W+1):
+  out[:,W:-W]+=t[:,u+W:u+t.shape[1]-W]
+ return out/(2*W+1)
+\end{Verbatim}
+
+% \verb||\verb||
+
+% \verb|A|，\verb|b|は定義より，\verb|main|関数で定義した行列\verb|w|を用いて以下のように表せる．
+
+
+% \begin{Verbatim}[numbers=left, xleftmargin=10mm, numbersep=6pt,
+%                     fontsize=\small, baselinestretch=0.8]
+%   A[i*2+0,0]=w[i, 0]
+%   A[i*2+0,1]=w[i, 1] 
+%   A[i*2+0,2]=1
+%   A[i*2+1,2]=0
+%   A[i*2+0,3]=0
+%   A[i*2+1,3]=w[i, 0] 
+%   A[i*2+0,4]=0
+%   A[i*2+1,4]=w[i, 1]
+%   A[i*2+0,5]=0
+%   A[i*2+1,5]=1
+%   A[i*2+0,6]=-1 * w[i,0] * w[i, 2]
+%   A[i*2+1,6]=-1 * w[i,0] * w[i, 3]
+%   A[i*2+0,7]=-1 * w[i,1] * w[i, 2]
+%   A[i*2+1,7]=-1 * w[i,1] * w[i, 3]
+
+%   b[i*2+0  ]=w[i,2]
+%   b[i*2+1  ]=w[i,3]
+% \end{Verbatim}
+
+
+% \subsection{[3-2]}
+
+% \subsubsection{[3-1]で求めた\texttt{H}を用いた画像合成}
+
+% [2-2]で作成したコードを参考に作成する．以下のように\ref{3-1}で作成した関数\verb|calcHomography(w)|
+% で求めた変換行列を行列\verb|m10|に格納すると画像は\ref{3-1-1}のようになった．
+
+% \begin{Verbatim}[numbers=left, xleftmargin=10mm, numbersep=6pt,
+%                     fontsize=\small, baselinestretch=0.8]
+%   w=np.array(
+%      [[256, 218, 371, 230],
+%       [347, 220, 463, 230],
+%       [263, 367, 383, 379],
+%       [413, 315, 530, 327]])
+%   m10=calcHomography(w)
+% \end{Verbatim}
+
+% \begin{figure}[h]
+%  \centering
+%  \includegraphics[scale=.15]{/home/users/ecs/09B24490/eop/3_3class/3class/3-1-1.jpg}
+%  \caption{求めたHで生成した画像}
+%  \label{3-1-1}
+% \end{figure}
+
+% \subsubsection{合成画像の品質向上}
+
+% 近い4点の座標を選択するとその箇所は比較的に正確に合成できるが，
+% 離れた箇所ほどずれてしまう．
+% このことから，遠く離れた4点の座標を選択して品質向上を図る．
+% 以下のコードは新しく選んだ４つの点を\verb|w|に格納している．
+% 生成した画像は\ref{3-1-2}の左側である．
+% 生成した画像\ref{3-1-2}は画像\ref{3-1-1}よりも画質が悪いように感じる座標を
+% うまく対応できなかったのではないかと考える．
+
+% また，これらの８つの座標の\verb|w|をもちいて画像を作成すると図\ref{3-1-2}の右側のようになる．
+
+% \begin{Verbatim}[numbers=left, xleftmargin=10mm, numbersep=6pt,
+%                     fontsize=\small, baselinestretch=0.8]
+%   w=np.array(
+%      [[113,188,231,201],
+%       [281,513,398,521],
+%       [621,218,742,223],
+%       [573,437,697,448]])
+% \end{Verbatim}
+
+% \begin{figure}[h]
+%  \centering
+%  \includegraphics[scale=.15]{/home/users/ecs/09B24490/eop/3_3class/3class/3-1-2.jpg}
+%  \includegraphics[scale=.15]{/home/users/ecs/09B24490/eop/3_3class/3class/3-1-3.jpg}
+%  \caption{求めたHで生成した画像}
+%  \label{3-1-2}
+% \end{figure}
+
+% \subsubsection{自分で撮影した画像}
+
+% 同一の視点から方向を変えて撮影した二枚の画像を準備する．
+% それらの画像から８つの座標を選択し，合成画像を生成すると図\ref{3-1-2}のようになる．
+
+% \begin{figure}[h]
+%  \centering
+%  \includegraphics[scale=.5]{/home/users/ecs/09B24490/eop/3_3class/3class/my1.jpg}
+%  \includegraphics[scale=.5]{/home/users/ecs/09B24490/eop/3_3class/3class/my2.jpg}
+%  \includegraphics[scale=.15]{/home/users/ecs/09B24490/eop/3_3class/3class/3-2-4.jpg}
+%  \caption{自分で撮影した画像（左，中央）と合成画像}
+%  \label{3-1-2}
+% \end{figure}
+
+
+
+%--------------------------------------------------------------------%
+
+
+%--------------------------------------------------------------------%
+% \section{数式: 行列，ベクトル}
+
+% \newcommand\bA{\mbox{\boldmath$A$}}
+% \newcommand\bb{\mbox{\boldmath$b$}}
+% 太字$\bA$を使えるように定義した．
+% $\bA^{-1}\bb$等，使う文字を newcommand で定義して使う．
+
+% \boldsymbol{A} は使えない
+
+
+%--------------------------------------------------------------------%
+\section{感想}
+
+
+%--------------------------------------------------------------------%
+% 参考文献
+%   以下は，書き方の例である．実際に，参考にした書籍等を見て書くこと．
+%   本文で引用する際は，\cite{book:algodata}などとすればよい．
+\begin{thebibliography}{99}
+  % \bibitem{book:algodata} 平田富雄，アルゴリズムとデータ構造，森北出版，1990.
+  % \bibitem{book:label2} 著者名，書名，出版社，発行年.
+  % \bibitem{www:label3} WWWページタイトル，\spverb!https://example.of.too.long.url.jp/you.must.use.spverb/and.insert. a.space.somewhere.to.avoid.overfull.html!，アクセス日.
+\end{thebibliography}
+
+%--------------------------------------------------------------------%
+\end{document}
