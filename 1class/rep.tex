@@ -1,0 +1,265 @@
+\documentclass[autodetect-engine,dvi=dvipdfmx,ja=standard,
+               a4j,11pt]{bxjsarticle}
+
+\RequirePackage{geometry}
+\geometry{reset,paperwidth=210truemm,paperheight=297truemm}
+\geometry{hmargin=.75truein,top=20truemm,bottom=25truemm,footskip=10truemm,headheight=0mm}
+%\geometry{showframe} % 本文の"枠"を確認したければ，コメントアウト
+\usepackage{graphicx}
+\usepackage{fancyvrb}
+\usepackage{spverbatim}
+\renewcommand{\theFancyVerbLine}{\texttt{\footnotesize{\arabic{FancyVerbLine}:}}}
+
+\title{画像処理実験 第1回}
+\author{学生番号: 09B24490\\
+        加藤弘都 (KATO, HIROTO)}
+\date{\number\year 年\number\month 月\number\day 日}
+
+%%======== 本文 ====================================================%%
+\begin{document}
+\maketitle
+% 目次つきの表紙ページにする場合はコメントを外す
+%{\footnotesize \tableofcontents \newpage}
+
+%--------------------------------------------------------------------%
+\section{課題1} \label{sec:abstract}
+
+\subsection{[1-1]}
+
+\begin{figure}[h]
+ \centering
+ \includegraphics[scale=.5]{/home/users/ecs/09B24490/eop/3_3class/1class/1-1-1.png}
+ \includegraphics[scale=.5]{/home/users/ecs/09B24490/eop/3_3class/1class/1-1-2.png}
+ \includegraphics[scale=.5]{/home/users/ecs/09B24490/eop/3_3class/1class/1-1-3.png}
+ \includegraphics[scale=.5]{/home/users/ecs/09B24490/eop/3_3class/1class/1-1-4.png}
+ \caption{1-1の画像}
+ \label{1-1}
+\end{figure}
+
+% \begin{Verbatim}[numbers=left, xleftmargin=10mm, numbersep=6pt,
+%                     fontsize=\small, baselinestretch=0.8]
+% imA=np.array([
+%  [0,0,1,0,0,0],
+%  [0,1,0,1,0,0],
+%  [0,1,0,1,0,0],
+%  [1,0,0,0,1,0],
+%  [1,1,1,1,1,0],
+%  [1,0,0,0,1,0],
+%  [1,0,0,0,1,0],
+%  [1,0,0,0,1,0]],'f')
+% eb.imshow(imA,8)
+% imA[3,:]=.5
+% eb.imshow(imA,8)
+% imA[::2, ::2]=.5
+% eb.imshow(imA,8)
+% imA[1::2,1::2]=.5
+% #print(imA.shape)
+% eb.imshow(imA,8)
+% \end{Verbatim}
+
+[1-1]では図\ref{1-1}のように，画像の一部の範囲を指定して画素値を$0.5$に変更した．
+\begin{enumerate}
+  \item \verb|imA[3,:]=.5|では上から４行目のすべての値を指定し，その行のすべての画素値を
+  $0.5$に変更している．
+  \item \verb|imA[::2, ::2]=.5|では\verb|::|が「（最初の値）：（最後の値）：
+  （何個ごとに選択するか）」を表し，今回は\verb|x|，\verb|y|両方が最初から２個おきに
+  選択した箇所の画素値を$0.5$に変更する
+  ということである．
+  \item \verb|imA[1::2,1::2]=.5|では\verb|x|，\verb|y|両方が$1$から２個おきに選択した箇所
+  の画素値を$0.5$に変更する．
+\end{enumerate}
+
+\subsection{[1-2]}
+
+\begin{figure}[h]
+ \centering
+ \includegraphics[scale=.5]{/home/users/ecs/09B24490/eop/3_3class/1class/1-2-2.png}
+ \includegraphics[scale=.5]{/home/users/ecs/09B24490/eop/3_3class/1class/1-2.png}
+ \caption{1-2の画像}
+ \label{1-2}
+\end{figure}
+
+% \begin{Verbatim}[numbers=left, xleftmargin=10mm, numbersep=6pt,
+%                     fontsize=\small, baselinestretch=0.8]
+% ima=np.array([
+%  [.98, .97, .98, .98, .98, .97, .97, .96, .97, .98, .98, .99, .98, .98, .97, .95],
+%  [.99, .98, .95, .93, .86, .7 , .67, .67, .66, .71, .89, .98, .98, .98, .97, .93],
+%  [.99, .97, .89, .63, .36, .38, .5 , .53, .4 , .24, .34, .78, .96, .97, .98, .97],
+%  [.99, .95, .72, .23, .17, .8 , .96, .98, .93, .49, .14, .27, .78, .98, .98, .98],
+%  [.98, .89, .39, .09, .18, .89, .98, .98, .99, .65, .16, .12, .51, .96, .99, .99],
+%  [.98, .85, .33, .13, .32, .93, .98, .98, .98, .65, .14, .07, .29, .93, .98, .99],
+%  [.98, .95, .64, .42, .67, .96, .98, .98, .94, .61, .17, .07, .18, .88, .98, .98],
+%  [.98, .98, .96, .91, .95, .98, .95, .87, .67, .44, .18, .07, .17, .88, .98, .98],
+%  [.98, .99, .99, .98, .94, .7 , .45, .41, .59, .47, .23, .05, .18, .92, .98, .99],
+%  [.98, .99, .96, .85, .58, .37, .52, .77, .98, .79, .21, .06, .16, .91, .98, .98],
+%  [.98, .96, .78, .36, .2 , .59, .91, .98, .99, .69, .17, .09, .12, .87, .97, .97],
+%  [.98, .89, .4 , .14, .2 , .86, .97, .97, .98, .66, .15, .09, .15, .85, .97, .97],
+%  [.98, .72, .17, .1 , .26, .92, .97, .96, .95, .56, .15, .09, .15, .87, .97, .98],
+%  [.95, .51, .08, .13, .19, .83, .98, .98, .89, .43, .13, .14, .12, .84, .98, .97],
+%  [.97, .65, .15, .18, .19, .45, .73, .76, .55, .29, .2 , .19, .1 , .67, .89, .96],
+%  [.99, .87, .39, .12, .16, .11, .19, .29, .56, .62, .25, .14, .1 , .15, .4 , .86],
+%  [.98, .98, .77, .44, .24, .3 , .49, .7 , .93, .98, .84, .39, .26, .44, .71, .94],
+%  [.99, .98, .98, .93, .82, .84, .93, .97, .97, .98, .98, .9 , .84, .91, .97, .98]])
+
+% eb.imshow(ima,8)
+
+% mask=(ima>=.6)
+% # print(mask)
+% ima[~mask] = 0
+% ima[mask] = 1
+% eb.imshow(ima,8)
+
+% \end{Verbatim}
+
+[1-2]では図\ref{1-2}曖昧に表示される画像を２値分離により明確に表示するようにした．
+
+\verb|mask|を各配列の値が$0.6$以上なら\verb|True|，そうでないなら\verb|False|
+を格納する配列として定義した．
+このとき画素値は，\verb|mask|が\verb|True|なら$1$（白色），\verb|False|なら$0$（黒色）
+にし，画像を２値分類した．
+
+\subsection{[1-3]}
+
+\begin{figure}[h]
+ \centering
+ \includegraphics[scale=.5]{/home/users/ecs/09B24490/eop/3_3class/1class/1-3-2.png}
+ \includegraphics[scale=.5]{/home/users/ecs/09B24490/eop/3_3class/1class/1-3.png}
+ \caption{1-3の画像}
+ \label{1-3}
+\end{figure}
+
+% \begin{Verbatim}[numbers=left, xleftmargin=10mm, numbersep=6pt,
+%                     fontsize=\small, baselinestretch=0.8]
+% imrgb=np.array([
+%  [[  0,  0,  0], [  0,  0,  1], [  0,  1,  0], [  0,  1,  1]],
+%  [[  1,  0,  0], [  1,  0,  1], [  1,  1,  0], [  1,  1,  1]] ],'f')
+% imrgb[1,::,0]=0.5
+% eb.imshow(imrgb,32)
+% \end{Verbatim}
+
+[1-3]では図\ref{1-3}のように画素値を３次ベクトルにし，\verb|imrgb[1,::,0]=.5|で指定した行の１つ目の要素の画素値を
+$0.5$に変更した．
+
+\subsection{[1-5]}
+
+\begin{figure}[h]
+ \centering
+ \includegraphics[scale=.5]{/home/users/ecs/09B24490/eop/3_3class/1class/1-5-1.jpg}
+ \includegraphics[scale=.5]{/home/users/ecs/09B24490/eop/3_3class/1class/1-5-2.jpg}
+ \caption{1-5の画像}
+ \label{1-5}
+\end{figure}
+
+\begin{Verbatim}[numbers=left, xleftmargin=10mm, numbersep=6pt,
+                    fontsize=\small, baselinestretch=0.8]
+def someAlg1(im):
+
+  # 処理 1　黒くする
+ im[100:200,250:350]=0         # slice, broadcast
+
+ # 処理 2　指定範囲を赤くする
+ im[200:300,400:500]=[1,0,0]   # broadcast
+
+ # 処理 3  薄く赤色にする              # vector
+ im[400:500,200:300]=(im[400:500,200:300]+[1,0,0])/2
+
+ # 処理 4  
+ 
+ y,x=np.indices(im.shape[:2])
+ mask= (x-100)**2+(y-400)**2<50**2
+ im[mask]=[0,1,0]              # cond2d
+ 
+
+ # 処理 1'　　白くする
+ y,x=np.indices((100,100))
+ im[100+y,250+x]=1             # indices2Dloop
+
+ # 処理 5   　指定部分を半時計回りに９０度回転
+ y,x=np.indices((100,100))
+ im[200+y,300+x]=im[200+x,300-y]
+
+ # 処理 6    指定部分を拡大
+ y,x=np.indices((100,100))
+ im[300+y,300+x]=im[300+y//2,300+x//2]
+
+ # 処理 7  回転・拡大縮小
+ if 1:
+  y,x=np.mgrid[-150:150,-150:150]       # mgrid
+  print('x=\n',x)
+  print('y=\n',y)
+  a=3.14159/4  # TODO: 値を変えて実験
+  s=1        # TODO: 値を変えて実験 (注意: 値によってはエラーになる)
+  c,s=np.cos(a)/s, np.sin(a)/s
+  u,v= x*c-y*s+550, \
+       x*s+y*c+220                      # unpack
+  im[220+y,550+x]= im[v.astype('i'),
+                      u.astype('i')]
+ print(x*c-y*s+550)
+ print(x*s+y*c+220)
+
+ # 処理 8a  指定箇所のみ表示
+ #im=im[300:400,400:500]
+
+ # 処理 8b (8a か 8b の一方のみを実行すること)
+ #                Kronecker積を用いて8aの画像を拡大
+ #im=im[300:400,400:500]
+ #box331=np.array([[1,1,1],
+ #                 [1,1,1],
+ #                 [1,1,1]]).reshape(3,3,1)
+ #im=np.kron(im,box331)
+
+ return im
+\end{Verbatim}
+
+プログラムを書き換え，実行した写真の一つが図\ref{1-5}（下側の画像は処理8bを実行した場合）である．
+各処理の内容について説明する．
+\begin{enumerate}
+  \item 処理１は指定した範囲\verb|[100:200,250:350]|の色を黒色に変更している．
+  \item 処理２は指定した範囲\verb|im[200:300,400:500]|の色を赤色に変更している．
+  \item 処理３は指定した範囲に\verb|[1,0,0]|を加算し，$2$で割っている．
+  \item 処理４は各座標ごとに条件\verb|(x-100)**2+(y-400)**2<50**2|に当てはまるなら，
+色を\verb|[0,1,0]|にしている．
+  \item 処理１’は\verb|x|，\verb|y|にそれぞれ\verb|[0,1,2,...,99]|が格納されていることから
+  \verb|[100+y,250+x]|は\verb|[100:199,250:349]|の範囲を白色に変更している．
+ \item  処理５は指定範囲\verb|[200:299,300:399]|を半時計90度回転させている．
+  \item 処理６は指定範囲\verb|[300:399,300:399]|を拡大して表示している．
+  \item 処理７は指定範囲\verb|[70:370,400:700]|を\verb|a|度だけ反時計周りに回転させ，
+  \verb|s|倍に拡大して表示している．
+  \item 処理8aは指定範囲\verb|[300:400,400:500]|のみ表示する．
+  \item 処理8bは指定範囲\verb|[300:400,400:500]|のみを３倍に拡大して表示する．
+\end{enumerate}
+% \verb||\verb||\verb||\verb||\verb||\verb||\verb||\verb||
+%--------------------------------------------------------------------%
+
+
+%--------------------------------------------------------------------%
+% \section{数式: 行列，ベクトル}
+
+% \newcommand\bA{\mbox{\boldmath$A$}}
+% \newcommand\bb{\mbox{\boldmath$b$}}
+% 太字$\bA$を使えるように定義した．
+% $\bA^{-1}\bb$等，使う文字を newcommand で定義して使う．
+
+% \boldsymbol{A} は使えない
+
+
+%--------------------------------------------------------------------%
+\section{感想}
+画像の範囲の指定などについての理解が深まった．
+座標変換して回転など，前に授業で習ったであろう内容もいくつか出てきていると思うが，
+課題をしているときにすぐに思いつかなかった．
+画像処理には今まで授業で習ってきた数学が多く出てくるので早めに復習しておくことが
+次以降の授業の理解に役立つのではないかと考えた．
+
+%--------------------------------------------------------------------%
+% 参考文献
+%   以下は，書き方の例である．実際に，参考にした書籍等を見て書くこと．
+%   本文で引用する際は，\cite{book:algodata}などとすればよい．
+\begin{thebibliography}{99}
+  % \bibitem{book:algodata} 平田富雄，アルゴリズムとデータ構造，森北出版，1990.
+  % \bibitem{book:label2} 著者名，書名，出版社，発行年.
+  % \bibitem{www:label3} WWWページタイトル，\spverb!https://example.of.too.long.url.jp/you.must.use.spverb/and.insert. a.space.somewhere.to.avoid.overfull.html!，アクセス日.
+\end{thebibliography}
+
+%--------------------------------------------------------------------%
+\end{document}

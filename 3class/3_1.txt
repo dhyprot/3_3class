@@ -1,0 +1,55 @@
+# [3.1 lsq]
+
+def makeAb(w):
+  A=np.zeros((8,8),'d')
+  b=np.zeros(8,'d')
+  i=np.array([0,1,2,3])
+  
+  A[i*2+0,0]=w[i, 0]
+  A[i*2+0,1]=w[i, 1] 
+  A[i*2+0,2]=1
+  A[i*2+1,2]=0
+  A[i*2+0,3]=0
+  A[i*2+1,3]=w[i, 0] 
+  A[i*2+0,4]=0
+  A[i*2+1,4]=w[i, 1]
+  A[i*2+0,5]=0
+  A[i*2+1,5]=1
+  A[i*2+0,6]=-1 * w[i,0] * w[i, 2]
+  A[i*2+1,6]=-1 * w[i,0] * w[i, 3]
+  A[i*2+0,7]=-1 * w[i,1] * w[i, 2]
+  A[i*2+1,7]=-1 * w[i,1] * w[i, 3]
+
+  b[i*2+0  ]=w[i,2]
+  b[i*2+1  ]=w[i,3]
+  
+  return A,b
+
+
+def calcHomography(w): # （注）homography = 射影変換
+
+  A,b=makeAb(w) # w から A と b を計算する．
+
+  print(A)  # ※2
+  print(b)
+
+  # LeaST-SQuares = 最小2乗法
+  tmp=np.linalg.lstsq(A,b,rcond=None)[0]
+  print(tmp)
+
+  # ※3 tmp の前に 0 個，後ろに 1 個の 1 を追加する．
+  tmp=np.pad(tmp,(0,1),constant_values=1) 
+  print(tmp)
+
+  return tmp.reshape(3,3) # 3x3 にする．
+
+
+def main():
+  # 良い値を入れる
+  w=np.array(
+     [[119,194,367,209],
+      [458,470,715,486],
+      [137,456,388,463],
+      [10,564,272,560]])
+  H=calcHomography(w)
+  print(H)

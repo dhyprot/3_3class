@@ -1,0 +1,176 @@
+\documentclass[autodetect-engine,dvi=dvipdfmx,ja=standard,
+               a4j,11pt]{bxjsarticle}
+
+\RequirePackage{geometry}
+\geometry{reset,paperwidth=210truemm,paperheight=297truemm}
+\geometry{hmargin=.75truein,top=20truemm,bottom=25truemm,footskip=10truemm,headheight=0mm}
+%\geometry{showframe} % 本文の"枠"を確認したければ，コメントアウト
+\usepackage{graphicx}
+\usepackage{fancyvrb}
+\usepackage{spverbatim}
+\usepackage{amsmath}
+
+\renewcommand{\theFancyVerbLine}{\texttt{\footnotesize{\arabic{FancyVerbLine}:}}}
+
+\title{画像処理実験 第5回}
+\author{学生番号: 09B24490\\
+        加藤弘都 (KATO, HIROTO)}
+\date{\number\year 年\number\month 月\number\day 日}
+
+%%======== 本文 ====================================================%%
+\begin{document}
+\maketitle
+% 目次つきの表紙ページにする場合はコメントを外す
+%{\footnotesize \tableofcontents \newpage}
+
+%--------------------------------------------------------------------%
+\section{課題5} \label{sec:abstract}
+
+\subsection{[5-2]} 
+
+\subsubsection{「特徴点らしさ」の大きいものを\texttt{MAX}個選び出す}
+
+まず，特徴点の座標と特徴点らしさを格納した配列\verb|ary|の特徴点らしさの要素を
+降順にソートして先頭から\verb|MAX=30|個の特徴点を選ぶ．
+以下はその処理を表すコードである．
+ソートには\verb|np.argsort|関数を用いて，
+\verb|ary[:, 2]|で配列の第三要素（特徴点らしさ）について昇順にソートし，
+\verb|[::-1]|で配列を降順にしている．
+
+\begin{Verbatim}[numbers=left, xleftmargin=10mm, numbersep=6pt,
+                    fontsize=\small, baselinestretch=0.8]
+  ary = ary[np.argsort(ary[:, 2])[::-1]]
+  ary=ary[:MAX]
+\end{Verbatim}
+
+このとき，図\ref{5-2-1}のような画像になった．
+画像をみると，左側のもとの画像より特徴点の個数が減っており，
+特徴点を30個選んだことがわかる．
+
+\begin{figure}[h]
+ \centering
+ \includegraphics[scale=.15]{/home/users/ecs/09B24490/eop/3_3class/5class/5-2-0.jpg}
+ \includegraphics[scale=.15]{/home/users/ecs/09B24490/eop/3_3class/5class/5-2-1.jpg}
+ \caption{「特徴らしさ」をすべて出した画像（左）と大きいものを30個選んだ画像（右）}
+ \label{5-2-1}
+\end{figure}
+
+\subsection{[5-2]} 
+
+\subsubsection{\texttt{LocalMax}関数の構造}
+
+\verb|LocalMax|関数は以下のようなコードである．
+
+\begin{Verbatim}[numbers=left, xleftmargin=10mm, numbersep=6pt,
+                    fontsize=\small, baselinestretch=0.8]
+  for v in range(-W,W+1):
+   for u in range(-W,W+1):
+    out[W:-W,W:-W]=np.maximum(out[W:-W,W:-W],
+                              src[v+W:src.shape[0]+v-W,
+                                  u+W:src.shape[1]+u-W])
+\end{Verbatim}
+
+この関数では，\verb|out|が\verb|u|，\verb|v|によって変化しない画像で，
+\verb|u|，\verb|v|によって位置が変化する画像と\verb|np.maximum|で比較する．
+画像同士の対応する各画素について比較し，大きい方の値を\verb|out|の対応する場所に格納する．
+
+つまりこの関数では以下のような数式で，\verb|u|，\verb|v|の変動範囲で各画素の
+近傍での最大値検出している．
+
+$D(x,y)=\max_{u,v}I(x+u,y+v)$
+
+\subsubsection{\texttt{LocalMax}関数を縦横2段階に分解}
+
+先程の近傍での最大値を検出する式を以下のように二段階二分解して，
+計算の効率化を図る．
+
+\begin{eqnarray}
+O(x,y)&=&\frac{1}{15}\sum_{v=-7}^{7} T(x,y+v) \\
+\mbox{where}~~~ T(x,y)&=&\frac{1}{15}\sum_{u=-7}^{7}I(x+u,y)
+\end{eqnarray}
+
+この式をコードにすると以下のようになる．
+
+\begin{Verbatim}[numbers=left, xleftmargin=10mm, numbersep=6pt,
+                    fontsize=\small, baselinestretch=0.8]
+def LocalMax(src,W=7):
+  out=np.zeros_like(src)
+  t=np.zeros_like(src)
+  for v in range(-W,W +1):
+    t[W:-W,:]=np.maximum(t[W:-W,:],
+                            src[v+W:v+src.shape[0]-W,:])
+  for u in range(-W,W+1):
+    out[:,W:-W]=np.maximum(out[:,W:-W],
+                              t[:,u+W:u+t.shape[1]-W])
+  return out
+\end{Verbatim}
+
+\begin{table}[htbp]
+\centering
+\caption{変更前後の時間の変化}\label{table:5-2-1}
+\begin{tabular}{|c||c|c|}
+\hline
+ & 変更前 & 変更後　\\
+\hline
+\texttt{LocalMax}関数でかかった時間 & 0.206 & 0.035 \\
+\hline
+\end{tabular}\end{table}
+
+このコードへの変更前後でのかかる時間の変化を表\ref{table:5-2-1}に示す．
+この表をみると，変更後のコードのほうが早くなっていることが分かり，
+処理を効率化できている．
+
+変更前のコードは二重ループを使用しているため$(2W+1)*(2W+1)*(画素数)$回計算しているが，
+変更後は$(2W+1)*(画素数)*2$回の計算するため，処理を効率化できたと考える．
+
+
+\subsubsection{\texttt{NAIVE}と速度・結果を比較}
+
+\begin{table}[htbp]
+\centering
+\caption{変更前後の時間の変化}\label{table:5-2-2}
+\begin{tabular}{|c||c|c|}
+\hline
+ & \texttt{FAST} & \texttt{NAIVE}　\\
+\hline
+極大判定でかかった時間 & 0.004 & 0.164 \\
+\hline
+\end{tabular}\end{table}
+
+表\ref{table:5-2-2}は\verb|NAIVE|との速度を比較した結果である．
+これを見ると，\verb|NAIVE|の方が遅くなっていることがわかる．
+\verb|NAIVE|では二重ループしているため，\verb|FAST|よりも計算量が増えたのではないかと考える．
+
+
+
+
+%--------------------------------------------------------------------%
+
+
+%--------------------------------------------------------------------%
+% \section{数式: 行列，ベクトル}
+
+% \newcommand\bA{\mbox{\boldmath$A$}}
+% \newcommand\bb{\mbox{\boldmath$b$}}
+% 太字$\bA$を使えるように定義した．
+% $\bA^{-1}\bb$等，使う文字を newcommand で定義して使う．
+
+% \boldsymbol{A} は使えない
+
+
+%--------------------------------------------------------------------%
+\section{感想}
+
+
+%--------------------------------------------------------------------%
+% 参考文献
+%   以下は，書き方の例である．実際に，参考にした書籍等を見て書くこと．
+%   本文で引用する際は，\cite{book:algodata}などとすればよい．
+\begin{thebibliography}{99}
+  % \bibitem{book:algodata} 平田富雄，アルゴリズムとデータ構造，森北出版，1990.
+  % \bibitem{book:label2} 著者名，書名，出版社，発行年.
+  % \bibitem{www:label3} WWWページタイトル，\spverb!https://example.of.too.long.url.jp/you.must.use.spverb/and.insert. a.space.somewhere.to.avoid.overfull.html!，アクセス日.
+\end{thebibliography}
+
+%--------------------------------------------------------------------%
+\end{document}

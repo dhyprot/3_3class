@@ -1,0 +1,68 @@
+\documentclass[autodetect-engine,dvi=dvipdfmx,ja=standard,
+               a4j,11pt]{bxjsarticle}
+
+\RequirePackage{geometry}
+\geometry{reset,paperwidth=210truemm,paperheight=297truemm}
+\geometry{hmargin=.75truein,top=20truemm,bottom=25truemm,footskip=10truemm,headheight=0mm}
+%\geometry{showframe} % 本文の"枠"を確認したければ，コメントアウト
+\usepackage{graphicx}
+\usepackage{fancyvrb}
+\usepackage{spverbatim}
+\renewcommand{\theFancyVerbLine}{\texttt{\footnotesize{\arabic{FancyVerbLine}:}}}
+
+\title{画像処理実験 第1回}
+\author{学生番号: 09B24490\\
+        加藤弘都 (KATO, HIROTO)}
+\date{\number\year 年\number\month 月\number\day 日}
+
+%%======== 本文 ====================================================%%
+\begin{document}
+\maketitle
+% 目次つきの表紙ページにする場合はコメントを外す
+%{\footnotesize \tableofcontents \newpage}
+
+%--------------------------------------------------------------------%
+\section{課題1} \label{sec:abstract}
+
+\begin{Verbatim}[numbers=left, xleftmargin=10mm, numbersep=6pt,
+                    fontsize=\small, baselinestretch=0.8]
+def main():
+  s=[ord('A'), ord('B'), ord('C')]
+  print(s)
+  print(bytes(s).decode())
+\end{Verbatim}
+
+%--------------------------------------------------------------------%
+\begin{figure}[h]
+ \centering
+ \includegraphics[scale=.5]{0.jpg}
+ \caption{入力画像}
+ \label{fig:input}
+\end{figure}
+
+%--------------------------------------------------------------------%
+\section{数式: 行列，ベクトル}
+
+\newcommand\bA{\mbox{\boldmath$A$}}
+\newcommand\bb{\mbox{\boldmath$b$}}
+太字$\bA$を使えるように定義した．
+$\bA^{-1}\bb$等，使う文字を newcommand で定義して使う．
+
+% \boldsymbol{A} は使えない
+
+
+%--------------------------------------------------------------------%
+\section{感想}
+
+%--------------------------------------------------------------------%
+% 参考文献
+%   以下は，書き方の例である．実際に，参考にした書籍等を見て書くこと．
+%   本文で引用する際は，\cite{book:algodata}などとすればよい．
+\begin{thebibliography}{99}
+  \bibitem{book:algodata} 平田富雄，アルゴリズムとデータ構造，森北出版，1990.
+  \bibitem{book:label2} 著者名，書名，出版社，発行年.
+  \bibitem{www:label3} WWWページタイトル，\spverb!https://example.of.too.long.url.jp/you.must.use.spverb/and.insert. a.space.somewhere.to.avoid.overfull.html!，アクセス日.
+\end{thebibliography}
+
+%--------------------------------------------------------------------%
+\end{document}

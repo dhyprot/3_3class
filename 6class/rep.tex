@@ -1,0 +1,324 @@
+\documentclass[autodetect-engine,dvi=dvipdfmx,ja=standard,
+               a4j,11pt]{bxjsarticle}
+
+\RequirePackage{geometry}
+\geometry{reset,paperwidth=210truemm,paperheight=297truemm}
+\geometry{hmargin=.75truein,top=20truemm,bottom=25truemm,footskip=10truemm,headheight=0mm}
+%\geometry{showframe} % 本文の"枠"を確認したければ，コメントアウト
+\usepackage{graphicx}
+\usepackage{fancyvrb}
+\usepackage{spverbatim}
+\usepackage{amsmath}
+
+\renewcommand{\theFancyVerbLine}{\texttt{\footnotesize{\arabic{FancyVerbLine}:}}}
+
+\title{画像処理実験 第6回}
+\author{学生番号: 09B24490\\
+        加藤弘都 (KATO, HIROTO)}
+\date{\number\year 年\number\month 月\number\day 日}
+
+%%======== 本文 ====================================================%%
+\begin{document}
+\maketitle
+% 目次つきの表紙ページにする場合はコメントを外す
+%{\footnotesize \tableofcontents \newpage}
+
+%--------------------------------------------------------------------%
+\section{課題5} \label{sec:abstract}
+
+\subsection{[5-2]} 
+
+\subsubsection{条件(i)–(iii)の意味の考察}
+
+類似度の表とは，表の片方の軸をある画像の特徴点とし，もう片方の軸も2つめの画像の特徴点とする．
+表の類似度の値はそれぞれの特徴点周囲の少領域の画素値の差の二乗和で類似度を示しており，
+値が小さいほど類似していることを意味する．以下の条件を満たすときの特徴点を探す．
+
+\begin{itemize}
+    \item (i)表の第$[i,j]$要素の値が小さい対$(i,j)$を選ぶ．
+    \item (ii)各$i$は1つの$j$と対応する，
+    \item (iii)各$j$は1つの$i$と対応する．
+\end{itemize}
+
+(i)は，類似度が小さいほどある特徴点同士が類似していることを利用している．
+
+(ii)，(iii)では，ある特徴点に対応する別の画像の特徴点が複数存在すると，
+その点は別の画像の複数の離れた箇所と対応することになってしまう．
+このことを防ぐため，各特徴点には一つの特徴点が存在する条件がa必要になる．
+
+
+\subsubsection{（方法1）の問題点}
+
+（方法1）のSSDの和は$939$であり，他の方法より大きくなっていることがわかる．
+方法１は$i$の値から順に最小の$j$を見つけている．このとき，見つけたときの$j$列の値は無視されてしまう．
+すると，途中から無視される$j$の値がその列で選択されている$j$の値よりも小さいことがあるのだと考える．
+
+つまり，問題点は先に見つけた$j$の値はその列の最小の$j$の値ではない可能性があるのに，
+それ以降ではその$j$列を無視されてしまうということである．
+
+\subsubsection{（方法2）の問題点}
+
+ある時点の最小の値と同じ行と列にある値は無視される．
+このことから，問題点は次以降の最小の値が無視される行と列に存在するとき，
+次の最小の値は大きくなり，結果としてSSDも増加すると考える．
+
+\subsubsection{[6-2]}
+
+\subsubsection{方法２の実装}
+
+方法２は以下のようになる．行列の最小の場所を探す．
+\verb|ji|には座標ではなく，配列に登録されている値を前から順に0,1,2,...のように数えた値が入る．
+そのため\verb|np.unravel_index|関数で\verb|ji|を座標の形\verb|(sx,sy)|にする．
+最後に\verb|w|に値を代入し，最小の値の列と行を除去する．
+
+\begin{Verbatim}[numbers=left, xleftmargin=10mm, numbersep=6pt,
+                    fontsize=\small, baselinestretch=0.8]
+def matchMethod2(mt,x1,x2):
+  N1=len(x1)
+  N2=len(x2)
+  N=min(N1,N2)
+  w=np.empty((N,4),'i')
+# mtorg=mt.copy() # 下記ループで mt が破壊されるため，必要であればコピーを保存しておく
+
+  for i in range(N):
+    ji=np.argmin(mt) # 行中の最小値の場所
+    sx,sy=np.unravel_index(ji,mt.shape) 
+
+    # 出力は対(i,ji)ではなく，
+    # それらに対応する座標の組(x,y,u,v)とする
+    w[i]=[ x1[sx ,0],x1[sx ,1],
+           x2[sy,0],x2[sy,1] ]
+    mt[:,sy]=np.inf     # 縦消去
+    mt[sx,:]=np.inf     # 横消去
+
+  return w
+\end{Verbatim}
+
+また，課題５の\verb|detectFeaturePoints|関数を使ってそれぞれの画像の特徴点を
+配列\verb|x1|，\verb|x2|に格納し，\verb|getW|関数を呼び出す.
+これにより作られた\verb|W|の値から対応を取ると図\ref{6-2-1}のようになる．
+
+\begin{figure}[h]
+ \centering
+ \includegraphics[scale=.15]{/home/users/ecs/09B24490/eop/3_3class/6class/6-2-1.png}
+ \includegraphics[scale=.15]{/home/users/ecs/09B24490/eop/3_3class/6class/6-2-2.png}
+ \caption{方法１（左）と方法２（右）}
+ \label{6-2-1}
+\end{figure}
+
+図\ref{6-2-1}を見ると，対応を示す線が平行のものが多い場合は対応しているので，
+多くの点がうまく対応iしてると考える．
+しかし，いくつかの対応は片方の写真にそもそもないがため，
+対応がうまくできてなかったりしていると考える．
+
+\subsection{[6-3]}
+
+課題6-2の\verb|W|の結果の中から正しい対応が取れた，４つの離れた点を以下のように選択する．
+
+\begin{Verbatim}[numbers=left, xleftmargin=10mm, numbersep=6pt,
+                    fontsize=\small, baselinestretch=0.8]
+  w=np.array(
+     [[119,194,367,209],
+      [458,470,715,486],
+      [137,456,388,463],
+      [10,564,272,560]])
+\end{Verbatim}
+
+このとき，課題３の射影変換行列の計算する\verb|calcHomography|関数などから合成画像を
+生成すると図\ref{6-2-2}のようになる．
+
+\begin{figure}[h]
+ \centering
+ \includegraphics[scale=.15]{/home/users/ecs/09B24490/eop/3_3class/6class/6-2-4.png}
+ \includegraphics[scale=.15]{/home/users/ecs/09B24490/eop/3_3class/6class/6-2-3.jpg}
+ \caption{[6-2]で求めた\texttt{W}のうち対応する４点（左）とそれを用いた合成画像（右）}
+ \label{6-2-2}
+\end{figure}
+
+図\ref{6-2-2}を見ると,4つの対応する点付近ではブレが少なく，正確に合成できていることがわかる．
+一部の家はぶれているので，正しい点を増やすことでより正確な画像になると考えた．
+
+\subsection{[6-4]}
+
+\subsubsection{手法3と手法1,2の比較}
+
+表\ref{table:6-4-1}を見ると，合計SSDは方法１より小さくなっているが方法２と変わっていない．
+
+\begin{table}[htbp]
+\centering
+\caption{合計SSDの比較}\label{table:6-4-1}
+\begin{tabular}{|c||c|c|c|}
+\hline
+ & 方法１ & 方法２ & 方法３　\\
+\hline
+合計SSD & 939 & 780 & 780\\
+\hline
+\end{tabular}\end{table}
+
+\subsubsection{\texttt{NAIVE}と\texttt{FAST}の実行時間を比較}
+
+100個の特徴点を求めるとき，\verb|calcSSDtable|関数の\verb|NAIVE|と\verb|FAST|の
+実行時間について表\ref{table:6-4-2}で比較した．
+
+\begin{table}[htbp]
+\centering
+\caption{変更前後の時間の変化}\label{table:6-4-2}
+\begin{tabular}{|c||c|c|}
+\hline
+ & \texttt{FAST} & \texttt{NAIVE}　\\
+\hline
+類似値表の作成にかかる時間(100こ) & 0.005 & 0.038 \\
+類似値表の作成にかかる時間(10000こ) & 0.176 & 1.469 \\
+\hline
+\end{tabular}\end{table}
+
+表\ref{table:6-4-2}を見ると，\verb|FAST|の方が早いことがわかる．
+これは，\verb|NAIVE|では二重ループを使用しているため，処理が増えたのではないかと考えた．
+また，\verb|FAST|配列を\verb|X*X|のようにまとめて計算していることから，
+処理が早くなったと考える．
+
+% まず，特徴点の座標と特徴点らしさを格納した配列\verb|ary|の特徴点らしさの要素を
+% 降順にソートして先頭から\verb|MAX=30|個の特徴点を選ぶ．
+% 以下はその処理を表すコードである．
+% ソートには\verb|np.argsort|関数を用いて，
+% \verb|ary[:, 2]|で配列の第三要素（特徴点らしさ）について昇順にソートし，
+% \verb|[::-1]|で配列を降順にしている．
+
+% \begin{Verbatim}[numbers=left, xleftmargin=10mm, numbersep=6pt,
+%                     fontsize=\small, baselinestretch=0.8]
+%   ary = ary[np.argsort(ary[:, 2])[::-1]]
+%   ary=ary[:MAX]
+% \end{Verbatim}
+
+% このとき，図\ref{5-2-1}のような画像になった．
+% 画像をみると，左側のもとの画像より特徴点の個数が減っており，
+% 特徴点を30個選んだことがわかる．
+
+% \begin{figure}[h]
+%  \centering
+%  \includegraphics[scale=.15]{/home/users/ecs/09B24490/eop/3_3class/5class/5-2-0.jpg}
+%  \includegraphics[scale=.15]{/home/users/ecs/09B24490/eop/3_3class/5class/5-2-1.jpg}
+%  \caption{「特徴らしさ」をすべて出した画像（左）と大きいものを30個選んだ画像（右）}
+%  \label{5-2-1}
+% \end{figure}
+
+% \subsection{[5-2]} 
+
+% \subsubsection{\texttt{LocalMax}関数の構造}
+
+% \verb|LocalMax|関数は以下のようなコードである．
+
+% \begin{Verbatim}[numbers=left, xleftmargin=10mm, numbersep=6pt,
+%                     fontsize=\small, baselinestretch=0.8]
+%   for v in range(-W,W+1):
+%    for u in range(-W,W+1):
+%     out[W:-W,W:-W]=np.maximum(out[W:-W,W:-W],
+%                               src[v+W:src.shape[0]+v-W,
+%                                   u+W:src.shape[1]+u-W])
+% \end{Verbatim}
+
+% この関数では，\verb|out|が\verb|u|，\verb|v|によって変化しない画像で，
+% \verb|u|，\verb|v|によって位置が変化する画像と\verb|np.maximum|で比較する．
+% 画像同士の対応する各画素について比較し，大きい方の値を\verb|out|の対応する場所に格納する．
+
+% つまりこの関数では以下のような数式で，\verb|u|，\verb|v|の変動範囲で各画素の
+% 近傍での最大値検出している．
+
+% $D(x,y)=\max_{u,v}I(x+u,y+v)$
+
+% \subsubsection{\texttt{LocalMax}関数を縦横2段階に分解}
+
+% 先程の近傍での最大値を検出する式を以下のように二段階二分解して，
+% 計算の効率化を図る．
+
+% \begin{eqnarray}
+% O(x,y)&=&\frac{1}{15}\sum_{v=-7}^{7} T(x,y+v) \\
+% \mbox{where}~~~ T(x,y)&=&\frac{1}{15}\sum_{u=-7}^{7}I(x+u,y)
+% \end{eqnarray}
+
+% この式をコードにすると以下のようになる．
+
+% \begin{Verbatim}[numbers=left, xleftmargin=10mm, numbersep=6pt,
+%                     fontsize=\small, baselinestretch=0.8]
+% def LocalMax(src,W=7):
+%   out=np.zeros_like(src)
+%   t=np.zeros_like(src)
+%   for v in range(-W,W +1):
+%     t[W:-W,:]=np.maximum(t[W:-W,:],
+%                             src[v+W:v+src.shape[0]-W,:])
+%   for u in range(-W,W+1):
+%     out[:,W:-W]=np.maximum(out[:,W:-W],
+%                               t[:,u+W:u+t.shape[1]-W])
+%   return out
+% \end{Verbatim}
+
+% \begin{table}[htbp]
+% \centering
+% \caption{変更前後の時間の変化}\label{table:5-2-1}
+% \begin{tabular}{|c||c|c|}
+% \hline
+%  & 変更前 & 変更後　\\
+% \hline
+% \texttt{LocalMax}関数でかかった時間 & 0.206 & 0.035 \\
+% \hline
+% \end{tabular}\end{table}
+
+% このコードへの変更前後でのかかる時間の変化を表\ref{table:5-2-1}に示す．
+% この表をみると，変更後のコードのほうが早くなっていることが分かり，
+% 処理を効率化できている．
+
+% 変更前のコードは二重ループを使用しているため$(2W+1)*(2W+1)*(画素数)$回計算しているが，
+% 変更後は$(2W+1)*(画素数)*2$回の計算するため，処理を効率化できたと考える．
+
+
+% \subsubsection{\texttt{NAIVE}と速度・結果を比較}
+
+% \begin{table}[htbp]
+% \centering
+% \caption{変更前後の時間の変化}\label{table:5-2-2}
+% \begin{tabular}{|c||c|c|}
+% \hline
+%  & \texttt{FAST} & \texttt{NAIVE}　\\
+% \hline
+% 極大判定でかかった時間 & 0.004 & 0.164 \\
+% \hline
+% \end{tabular}\end{table}
+
+% 表\ref{table:5-2-2}は\verb|NAIVE|との速度を比較した結果である．
+% これを見ると，\verb|NAIVE|の方が遅くなっていることがわかる．
+% \verb|NAIVE|では二重ループしているため，\verb|FAST|よりも計算量が増えたのではないかと考える．
+
+
+
+
+%--------------------------------------------------------------------%
+
+
+%--------------------------------------------------------------------%
+% \section{数式: 行列，ベクトル}
+
+% \newcommand\bA{\mbox{\boldmath$A$}}
+% \newcommand\bb{\mbox{\boldmath$b$}}
+% 太字$\bA$を使えるように定義した．
+% $\bA^{-1}\bb$等，使う文字を newcommand で定義して使う．
+
+% \boldsymbol{A} は使えない
+
+
+%--------------------------------------------------------------------%
+\section{感想}
+
+自動で正しい点をたくさん選択できたらもっといいのになーと感じた．
+
+%--------------------------------------------------------------------%
+% 参考文献
+%   以下は，書き方の例である．実際に，参考にした書籍等を見て書くこと．
+%   本文で引用する際は，\cite{book:algodata}などとすればよい．
+\begin{thebibliography}{99}
+  % \bibitem{book:algodata} 平田富雄，アルゴリズムとデータ構造，森北出版，1990.
+  % \bibitem{book:label2} 著者名，書名，出版社，発行年.
+  % \bibitem{www:label3} WWWページタイトル，\spverb!https://example.of.too.long.url.jp/you.must.use.spverb/and.insert. a.space.somewhere.to.avoid.overfull.html!，アクセス日.
+\end{thebibliography}
+
+%--------------------------------------------------------------------%
+\end{document}

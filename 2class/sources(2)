@@ -1,0 +1,200 @@
+# [2.1 geom]
+
+def afn(dw,dh, src, a):
+ im=np.zeros((dh,dw,3),'f')        # 黒い画像を用意
+
+ dy,dx=np.mgrid[-150:150,-150:150]
+
+ print(dx)                         # mgrid で作られる dx,dy を確認
+ print(dy)
+
+ x_,y_= a[0,0]*dx+a[0,1]*dy+a[0,2], \
+        a[1,0]*dx+a[1,1]*dy+a[1,2]
+
+ u,v=x_,y_                         # 除算を伴わない変換
+ im[220+dy,550+dx]= src[v.astype('i'),
+                        u.astype('i')]
+
+ return im
+
+ # 適当な処理 7
+ if 0:
+  y,x=np.mgrid[-150:150,-150:150]       # mgrid
+  print('x=\n',x)
+  print('y=\n',y)
+  a=3.14159/4  # TODO: 値を変えて実験
+  m=3.5        # TODO: 値を変えて実験 (注意: 値によってはエラーになる)
+  c,s=np.cos(a)/m, np.sin(a)/m
+  u,v= x*c-y*s+550, \
+       x*s+y*c+220                      # unpack
+  im[220+y,550+x]= im[v.astype('i'),
+                      u.astype('i')]
+
+
+def main():
+  dw,dh=1024,768
+  im0=eb.getImg('0.jpg')
+
+  t=3.14159/4
+  m=1
+  c,s=np.cos(t)/m, np.sin(t)/m
+  p=0
+  q=0
+
+  # print(f"c = {c}, s = {s}, c^2+s^2 = {c*c + s*s}")
+  # c^2+s^2 =! 1だからユークリッド変換でない
+  # 回転・平行移動・拡大・縮小
+  
+  a=np.array([[ c, -s, q],
+  	      [ s,  c, p],
+  	      [ 0,  0,   1]])
+  # eb.imshow(im0)
+
+  # print(f"c = {c}, s = {s}, c^2+s^2 = {c*c + s*s}")
+  # c^2+s^2 =! 1だからユークリッド変換でない
+  # 回転・平行移動・拡大・縮小
+
+  a=np.array([[ c, -s, 550],
+  	      [ s,  c, 220],
+  	      [ 0,  0,   1]])
+  
+  # 座標を(550, 220)ずらす
+  a = a @ np.array([[1,0,-550],
+                   [0,1,-220],
+                   [0,0,1]])
+
+  dst=afn4(dw,dh, # 出力画像の大きさ
+	  im0,   # 入力画像
+	  a)     # 内部パラメータ行列(画像の幅，高さ，焦点距離の値を持つ)
+
+  eb.imshow(dst)
+
+
+
+
+
+
+
+def proj(dw,dh, src, a):
+
+ im=np.zeros((dh,dw,3),'f')
+
+ y ,x =np.mgrid[0:dh,0:dw]                   # (i)
+
+ # z_を追加-----
+ x_,y_,z_= a[0,0]*x+a[0,1]*y+a[0,2], \
+        a[1,0]*x+a[1,1]*y+a[1,2], \
+        a[2,0]*x+a[2,1]*y+a[2,2]
+
+ # z_を追加-----
+ u,v=x_ / z_, \
+    y_ / z_
+
+ m = (0<=u)&(u<src.shape[1])&(0<=v)&(v<src.shape[0]) # (iv)
+ # 画像内の座標しか参照しないため，画像を拡大できる
+
+ im[y[m],x[m]]= src[v[m].astype('i'),
+		    u[m].astype('i')]        # (iii) int型でやっている
+
+ return im
+
+
+
+
+
+
+
+def afn2(dw,dh, src, a):
+
+# 下記(i) の x,y は
+# 下記(ii) で代入する領域の座標そのものであり，
+#  x,y = dx+550,dy+220 である．
+
+# afn と同じ出力画像が得られるように
+# （u,v を dx,dy ではなく x,y から計算するように），
+# main で以下の積を計算し afn2 には積を渡すべき．
+# a = a @ np.array([[1,0,-550],
+#                   [0,1,-220],
+#                   [0,0,1]])
+
+ im=np.zeros((dh,dw,3),'f')
+
+ y ,x =np.mgrid[70:370,400:700]                # (i) 画像の範囲
+# 射影変換
+ x_,y_= a[0,0]*x+a[0,1]*y+a[0,2], \
+        a[1,0]*x+a[1,1]*y+a[1,2]
+
+# zで割っていないかzを反映できてない
+ u ,v =x_,y_
+
+ im[y,x]= src[v.astype('i'),                   # (ii)
+              u.astype('i')]
+
+ return im
+
+
+
+
+
+
+
+
+
+
+
+
+def afn3(dw,dh, src, a):
+
+ # (iv)  で u,v が src の中か外かを判定し，
+ # (iii) で u,v が src の内部の場合のみ im[y,x] に代入
+ # これにより，(i) 画像全体を処理可能になる
+ # (前回の「注意: 値によってはエラーになる」という制約がなくなる)
+
+ im=np.zeros((dh,dw,3),'f')
+
+ y ,x =np.mgrid[0:dh,0:dw]                   # (i)
+
+ x_,y_= a[0,0]*x+a[0,1]*y+a[0,2], \
+        a[1,0]*x+a[1,1]*y+a[1,2]
+ u,v=x_,y_
+
+ m = (0<=u)&(u<src.shape[1])&(0<=v)&(v<src.shape[0]) # (iv)
+ # 画像内の座標しか参照しないため，画像を拡大できる
+
+ im[y[m],x[m]]= src[v[m].astype('i'),
+		    u[m].astype('i')]        # (iii) int型でやっている
+
+ return im
+
+
+
+
+
+
+
+
+def afn4(dw,dh, src, a):
+
+ # 双線形（bilinear）補間
+ # (iii) で u,v の小数部分を捨てずに使う．
+ # この時に src[u+1,v+1] も参照するため，
+ #  (iv) の条件を変更している．
+
+ im=np.zeros((dh,dw,3),'f')
+
+ y ,x =np.mgrid[0:dh,0:dw]
+
+ x_,y_= a[0,0]*x+a[0,1]*y+a[0,2], \
+        a[1,0]*x+a[1,1]*y+a[1,2]
+ u,v=x_,y_
+
+ m = (0<=u)&(u+1<src.shape[1])&(0<=v)&(v+1<src.shape[0]) # (iv)
+
+ ium=np.floor(u[m]); fum=(u[m]-ium)[...,None]; ium=ium.astype('i')
+ ivm=np.floor(v[m]); fvm=(v[m]-ivm)[...,None]; ivm=ivm.astype('i')
+ im[y[m],x[m]]= src[ivm  ,ium  ]*(1-fum)*(1-fvm)+ \
+	        src[ivm+1,ium  ]*(1-fum)*(  fvm)+ \
+	        src[ivm  ,ium+1]*(  fum)*(1-fvm)+ \
+	        src[ivm+1,ium+1]*(  fum)*(  fvm)    # (iii)
+
+ return im
