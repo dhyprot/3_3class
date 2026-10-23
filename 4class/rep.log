@@ -1,4 +1,4 @@
-This is e-upTeX, Version 3.141592653-p4.1.0-u1.29-230214-2.6 (utf8.uptex) (TeX Live 2023) (preloaded format=uplatex 2023.11.21)  20 OCT 2026 16:20
+This is e-upTeX, Version 3.141592653-p4.1.0-u1.29-230214-2.6 (utf8.uptex) (TeX Live 2023) (preloaded format=uplatex 2023.11.21)  23 OCT 2026 10:48
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -217,11 +217,8 @@ File: l3backend-dvipdfmx.def 2023-11-09 L3 backend support: dvipdfmx
 \g__pdf_backend_object_int=\count284
 \g__pdf_backend_annotation_int=\count285
 \g__pdf_backend_link_int=\count286
-) (./rep.aux
-
-LaTeX Warning: Label `4-2-1' multiply defined.
-
 )
+No file rep.aux.
 \openout1 = `rep.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 21.
@@ -242,7 +239,6 @@ LaTeX Font Info:    Checking defaults for JY2/mc/m/n on input line 21.
 LaTeX Font Info:    ... okay on input line 21.
 LaTeX Font Info:    Checking defaults for JT2/mc/m/n on input line 21.
 LaTeX Font Info:    ... okay on input line 21.
-
 *geometry* detected driver: dvipdfm
 *geometry* verbose mode - [ preamble ] result:
 * driver: dvipdfm
@@ -320,14 +316,26 @@ LaTeX Font Info:    Font shape `JT2/gt/m/n' will be
 (Font)              scaled to size 7.3977pt on input line 97.
 LaTeX Font Info:    Font shape `JY2/gt/m/n' will be
 (Font)              scaled to size 7.3977pt on input line 97.
-File: /home/users/ecs/09B24490/eop/3_3class/4class/4-1-1-sample.png Graphic fil
-e (type bmp)
-</home/users/ecs/09B24490/eop/3_3class/4class/4-1-1-sample.png>
-File: /home/users/ecs/09B24490/eop/3_3class/4class/4-1-1.jpg Graphic file (type
- bmp)
-</home/users/ecs/09B24490/eop/3_3class/4class/4-1-1.jpg>
+LaTeX Font Info:    Font shape `JT2/mc/bx/n' in size <10> not available
+(Font)              Font shape `JT2/gt/m/n' tried instead on input line 100.
+LaTeX Font Info:    Font shape `JT2/gt/m/n' will be
+(Font)              scaled to size 9.24713pt on input line 100.
+LaTeX Font Info:    Font shape `JY2/mc/bx/n' in size <10> not available
+(Font)              Font shape `JY2/gt/m/n' tried instead on input line 100.
+LaTeX Font Info:    Font shape `JY2/gt/m/n' will be
+(Font)              scaled to size 9.24713pt on input line 100.
+
+LaTeX Warning: Reference `4-2-1' on page 1 undefined on input line 100.
+
+File: ../4class/4-1-1-sample.png Graphic file (type bmp)
+<../4class/4-1-1-sample.png>
+File: ../4class/4-1-1.jpg Graphic file (type bmp)
+<../4class/4-1-1.jpg>
 
 LaTeX Warning: `h' float specifier changed to `ht'.
+
+
+LaTeX Warning: Reference `4-2-1' on page 1 undefined on input line 110.
 
 [1
 
@@ -336,6 +344,12 @@ Overfull \hbox (15.2389pt too wide) in paragraph at lines 204--211
 []$\OML/cmm/m/it/10 A\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 x; y\OT1/cmr/m/n/10 ) \O
 MS/cmsy/m/n/10 ^^C \OML/cmm/m/it/10 B \OT1/cmr/m/n/10 = []$ 
  []
+
+
+LaTeX Warning: Reference `4-2-1' on page 3 undefined on input line 221.
+
+
+LaTeX Warning: Reference `table:4-2-1' on page 3 undefined on input line 224.
 
 [3]
 
@@ -349,16 +363,19 @@ L3 programming layer <2023-11-09>
  ***********
 
 
-LaTeX Warning: There were multiply-defined labels.
+LaTeX Warning: There were undefined references.
+
+
+LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
 
  ) 
 Here is how much of TeX's memory you used:
- 4004 strings out of 474925
- 63074 string characters out of 5762549
+ 4005 strings out of 474925
+ 62667 string characters out of 5762549
  1932400 words of memory out of 5000000
- 26189 multiletter control sequences out of 15000+600000
- 570485 words of font info for 101 fonts, out of 8000000 for 9000
+ 26191 multiletter control sequences out of 15000+600000
+ 570793 words of font info for 102 fonts, out of 8000000 for 9000
  934 hyphenation exceptions out of 8191
  61i,9n,65p,229b,419s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
-Output written on rep.dvi (4 pages, 15256 bytes).
+Output written on rep.dvi (4 pages, 15244 bytes).

@@ -1,4 +1,4 @@
-This is e-upTeX, Version 3.141592653-p4.1.0-u1.29-230214-2.6 (utf8.uptex) (TeX Live 2023) (preloaded format=uplatex 2023.11.21)  20 OCT 2026 16:19
+This is e-upTeX, Version 3.141592653-p4.1.0-u1.29-230214-2.6 (utf8.uptex) (TeX Live 2023) (preloaded format=uplatex 2023.11.21)  23 OCT 2026 10:50
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -217,7 +217,8 @@ File: l3backend-dvipdfmx.def 2023-11-09 L3 backend support: dvipdfmx
 \g__pdf_backend_object_int=\count284
 \g__pdf_backend_annotation_int=\count285
 \g__pdf_backend_link_int=\count286
-) (./rep.aux)
+)
+No file rep.aux.
 \openout1 = `rep.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 21.
@@ -238,7 +239,6 @@ LaTeX Font Info:    Checking defaults for JY2/mc/m/n on input line 21.
 LaTeX Font Info:    ... okay on input line 21.
 LaTeX Font Info:    Checking defaults for JT2/mc/m/n on input line 21.
 LaTeX Font Info:    ... okay on input line 21.
-
 *geometry* detected driver: dvipdfm
 *geometry* verbose mode - [ preamble ] result:
 * driver: dvipdfm
@@ -319,20 +319,46 @@ LaTeX Font Info:    Font shape `JT2/gt/m/n' will be
 (Font)              scaled to size 7.3977pt on input line 76.
 LaTeX Font Info:    Font shape `JY2/gt/m/n' will be
 (Font)              scaled to size 7.3977pt on input line 76.
-File: /home/users/ecs/09B24490/eop/3_3class/6class/6-2-1.png Graphic file (type
- bmp)
-</home/users/ecs/09B24490/eop/3_3class/6class/6-2-1.png>
-File: /home/users/ecs/09B24490/eop/3_3class/6class/6-2-2.png Graphic file (type
- bmp)
-</home/users/ecs/09B24490/eop/3_3class/6class/6-2-2.png>
- [2]
-File: /home/users/ecs/09B24490/eop/3_3class/6class/6-2-4.png Graphic file (type
- bmp)
-</home/users/ecs/09B24490/eop/3_3class/6class/6-2-4.png>
-File: /home/users/ecs/09B24490/eop/3_3class/6class/6-2-3.jpg Graphic file (type
- bmp)
-</home/users/ecs/09B24490/eop/3_3class/6class/6-2-3.jpg>
- [3]
+LaTeX Font Info:    Font shape `JT2/mc/bx/n' in size <10> not available
+(Font)              Font shape `JT2/gt/m/n' tried instead on input line 99.
+LaTeX Font Info:    Font shape `JT2/gt/m/n' will be
+(Font)              scaled to size 9.24713pt on input line 99.
+LaTeX Font Info:    Font shape `JY2/mc/bx/n' in size <10> not available
+(Font)              Font shape `JY2/gt/m/n' tried instead on input line 99.
+LaTeX Font Info:    Font shape `JY2/gt/m/n' will be
+(Font)              scaled to size 9.24713pt on input line 99.
+
+
+LaTeX Warning: Reference `6-2-1' on page 2 undefined on input line 99.
+
+File: ../6class/6-2-1.png Graphic file (type bmp)
+<../6class/6-2-1.png>
+File: ../6class/6-2-2.png Graphic file (type bmp)
+<../6class/6-2-2.png>
+
+LaTeX Warning: Reference `6-2-1' on page 2 undefined on input line 109.
+
+[2]
+
+LaTeX Warning: Reference `6-2-2' on page 3 undefined on input line 128.
+
+File: ../6class/6-2-4.png Graphic file (type bmp)
+<../6class/6-2-4.png>
+File: ../6class/6-2-3.jpg Graphic file (type bmp)
+<../6class/6-2-3.jpg>
+
+LaTeX Warning: Reference `6-2-2' on page 3 undefined on input line 138.
+
+
+LaTeX Warning: Reference `table:6-4-1' on page 3 undefined on input line 145.
+
+
+LaTeX Warning: Reference `table:6-4-2' on page 3 undefined on input line 161.
+
+
+LaTeX Warning: Reference `table:6-4-2' on page 3 undefined on input line 175.
+
+[3]
 
 LaTeX Warning: Empty `thebibliography' environment on input line 321.
 
@@ -342,14 +368,21 @@ pLaTeX2e <2023-02-14u04>+1, based on
 LaTeX2e <2023-11-01>
 L3 programming layer <2023-11-09>
  ***********
+
+
+LaTeX Warning: There were undefined references.
+
+
+LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
+
  ) 
 Here is how much of TeX's memory you used:
- 4016 strings out of 474925
- 63597 string characters out of 5762549
+ 4017 strings out of 474925
+ 62840 string characters out of 5762549
  1926400 words of memory out of 5000000
- 26198 multiletter control sequences out of 15000+600000
- 570820 words of font info for 102 fonts, out of 8000000 for 9000
+ 26200 multiletter control sequences out of 15000+600000
+ 571128 words of font info for 103 fonts, out of 8000000 for 9000
  934 hyphenation exceptions out of 8191
  61i,8n,65p,241b,478s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
-Output written on rep.dvi (4 pages, 10384 bytes).
+Output written on rep.dvi (4 pages, 10316 bytes).
